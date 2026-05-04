@@ -92,8 +92,15 @@ def generate_briefing() -> str:
         }
     }
 
-    resp = requests.post(GEMINI_URL, json=payload, timeout=30)
-    resp.raise_for_status()
+import time
+    for attempt in range(3):
+        resp = requests.post(GEMINI_URL, json=payload, timeout=30)
+        if resp.status_code == 429:
+            print(f"Rate limited, waiting 30s (attempt {attempt+1})...")
+            time.sleep(30)
+            continue
+        resp.raise_for_status()
+        break
 
     data = resp.json()
     text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
