@@ -1,0 +1,42 @@
+name: GRC Daily Briefing
+
+on:
+  schedule:
+    # ── Change this to your preferred IST time ──
+    # IST = UTC + 5:30  |  so subtract 5:30 from your desired IST time
+    #
+    # Common IST → UTC conversions:
+    #   07:00 IST  →  "30 1 * * *"
+    #   07:30 IST  →  "0  2 * * *"   ← default below
+    #   08:00 IST  →  "30 2 * * *"
+    #   09:00 IST  →  "30 3 * * *"
+    #   20:00 IST  →  "30 14 * * *"
+    #
+    - cron: "0 2 * * *"   # 07:30 IST every day
+
+  # Lets you trigger it manually from the GitHub Actions tab anytime
+  workflow_dispatch:
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send daily briefing
+        env:
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python grc_briefing_bot.py
